@@ -5,7 +5,7 @@ echo 'Copying Git Repository...'
 cd repo
 
 echo 'Applying Arguments...'
-(Get-Content ./test.yml).replace('${bucketname}', $bucketname) | Set-Content ./new-test.yml
+(Get-Content ./template.yml).replace('${bucketname}', $bucketname) | Set-Content ./new-template.yml
 
 echo 'Zipping contents...'
 Compress-Archive -Path src/* -DestinationPath ./index.zip
@@ -21,13 +21,13 @@ aws s3api put-object --bucket $bucketname --key index.zip --body index.zip
 #aws s3api put-object --bucket $bucketname --key openapi.json --body openapi.json
 
 echo 'Creating CloudFormation...'
-aws cloudformation create-stack --stack-name $stackname --template-body file://new-test.yml --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name $stackname --template-body file://new-template.yml --capabilities CAPABILITY_NAMED_IAM
 
 Start-Sleep -Seconds 45
 
 echo 'Cleaning Up...'
 Remove-Item index.zip
-Remove-Item new-test.yml
+Remove-Item new-template.yml
 
 echo 'Fetching Information...'
 $l=aws lambda get-function-url-config --function-name Server | ConvertFrom-Json
